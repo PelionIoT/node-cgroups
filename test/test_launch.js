@@ -14,11 +14,11 @@ console.log("child: " + util.inspect(child));
 
 bozo.assignProcess(child.pid,"cpu").then(function(trait) {
 	console.log("SUCESS");
-	trait.set_cpu_percentage_use(0.1).then(function(){
+	trait.set_cpu_percentage_use(0.10,{use_cpus: 1}).then(function(){ // only use 5% of all CPU power (1 cores)
 		console.log("Set CPU ok.");
 	}).catch(function(err){
 		console.error("Failed to set CPU");
-	})
+	});
 }).catch(function(err){
 	console.log("FAILURE: " + util.inspect(err));
 });

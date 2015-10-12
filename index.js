@@ -8,6 +8,7 @@ var path = require('path');
 var pseudoFS = require('node-pseudofs');
 var orderedTable = require('./orderedTable.js');
 var Promise = require('es6-promise').Promise;
+var os = require('os');
 
 /**
  * 
@@ -25,6 +26,7 @@ cgroup on /sys/fs/cgroup/hugetlb type cgroup (rw,relatime,hugetlb)
 
  */
 
+var NUM_CPUS = os.cpus().length;
 
 var MAPS = {
 	blkio : 'blkio_fs',
@@ -141,17 +143,30 @@ var cpu_CIFS_trait = function(id,owner,base_path) {
 
 util.inherits(cpu_CIFS_trait,cg_trait);
 
-cpu_CIFS_trait.prototype.set_cpu_percentage_use = function(percent,period_us) {
+/**
+ * set CPU control on normal CIFS scheduler. 
+ * opts  = {
+ *    period_us: 1000000, // a number in us of the scheduler granularity
+ *    use_cpus: 1,        // by default this will consider all CPUs/cores
+ * }
+ * @param {number} percent A number form 0 to 1 for a percentage of how CPU to allow to the process
+ * @param {Object} *opts    An object as above
+ */
+cpu_CIFS_trait.prototype.set_cpu_percentage_use = function(percent,opts) {
 	var cfs_period_us_path = path.join(this.base_path,'cpu.cfs_period_us');
 	var cfs_quota_us_path = path.join(this.base_path,'cpu.cfs_quota_us');	
 	var self = this;
 	if(!percent || percent < 0 || percent > 1) {
 		throw new TypeError("Invalid percent value.",__filename,149);
 	}
-	if(!period_us || typeof period_us != 'number' || period_us < 100) {
-		period_us = 1000000;
+	var period_us = 1000000;
+	if(opts && opts.period_us && typeof opts.period_us == 'number' && opts.period_us >= 100) {
+		period_us = opts.period_us;
 	}
-	var quota_us = Math.floor(period_us * percent);
+	var cpus = NUM_CPUS;
+	if(opts && opts.use_cpus)
+		cpus = (opts.use_cpus > NUM_CPUS || opts.use_cpus < 1) ? cpus = NUM_CPUS : cpus = opts.use_cpus;
+	var quota_us = Math.floor(period_us * percent * cpus);
 	return new Promise(function(resolve, reject) {
 		pseudoFS.writePseudo(cfs_period_us_path,""+period_us, function(err,data){
 			if(!err) {
