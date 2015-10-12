@@ -1,0 +1,24 @@
+{
+  "name": "node-cgroups",
+  "version": "1.0.0",
+  "description": "node.js support for process containment via Linux cgroups",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WigWagCo/node-cgroups.git"
+  },
+  "author": "Ed Hemphill <npm@wigwag.com> (http://www.wigwag.com/)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WigWagCo/node-cgroups/issues"
+  },
+  "homepage": "https://github.com/WigWagCo/node-cgroups#readme",
+  "dependencies": {
+    "node-pseudofs": "https://github.com/WigWagCo/node-pseudofs",
+    "node-uuid" : "*",
+    "es6-promise": "*"
+  }
+}
